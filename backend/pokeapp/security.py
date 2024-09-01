@@ -6,11 +6,11 @@ from pwdlib import PasswordHash
 from datetime import datetime, timedelta, timezone
 from decouple import config
 from sqlalchemy import select
-from backend.pokeapp.database.connection import get_db
+from pokeapp.database.connection import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 
-from backend.pokeapp.models.models import User
+from pokeapp.models.models import User
 
 pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")

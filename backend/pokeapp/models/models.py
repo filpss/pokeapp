@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from backend.pokeapp.database.base import Base
+from pokeapp.database.base import Base
 
 
 class User(Base):

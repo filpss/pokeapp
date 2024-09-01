@@ -1,11 +1,11 @@
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.pokeapp.database.connection import get_db
-from backend.pokeapp.repository.respository import register_user, autenticate_user
-from backend.pokeapp.schemas.schemas import UserPublic, UserSchema, Token
+from pokeapp.database.connection import get_db
+from pokeapp.repository.respository import register_user, autenticate_user
+from pokeapp.schemas.schemas import UserPublic, UserSchema, Token
 from fastapi.security import OAuth2PasswordRequestForm
-from backend.pokeapp.security import get_current_user, create_access_token
+from pokeapp.security import get_current_user, create_access_token
 import requests
 
 router = APIRouter(prefix="/api")

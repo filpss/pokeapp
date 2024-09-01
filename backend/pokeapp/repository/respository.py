@@ -4,7 +4,7 @@ from sqlalchemy import select
 from ..models.models import User
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
-from backend.pokeapp.security import get_password_hash, verify_password
+from pokeapp.security import get_password_hash, verify_password
 
 
 def register_user(session: Session, username: str, password: str):
