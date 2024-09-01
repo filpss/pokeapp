@@ -9,8 +9,9 @@ from sqlalchemy import select
 from pokeapp.database.connection import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
-
 from pokeapp.models.models import User
+
+from backend.pokeapp.routes import redis_client
 
 pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
@@ -36,7 +37,7 @@ def create_access_token(data_payload: dict):
     return encode_jwt
 
 
-def get_current_user(
+async def get_current_user(
     session: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ):
     credentials_exception = HTTPException(
@@ -48,7 +49,15 @@ def get_current_user(
         payload = decode(token, config("SECRET_KEY"), algorithms=config("ALGORITHM"))
         username: str = payload.get("sub")
         if not username:
+            raise credentials_ex 3ception
+
+        cached_token = await redis_client.get(f"user_session_{username}")
+        if not cached_token:
             raise credentials_exception
+
+        if cached_token.decode('utf-8') != token:
+            raise credentials_exception
+
     except PyJWTError:
         raise credentials_exception
 

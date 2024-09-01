@@ -6,11 +6,14 @@ from pokeapp.repository.respository import register_user, autenticate_user
 from pokeapp.schemas.schemas import UserPublic, UserSchema, Token
 from fastapi.security import OAuth2PasswordRequestForm
 from pokeapp.security import get_current_user, create_access_token
-import requests
+import requests, redis, json
 
 router = APIRouter(prefix="/api")
 
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
+
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon"
+POKEAPI_SPECIES_URL = "https://pokeapi.co/api/v2/pokemon-species"
 
 @router.get("/")
 async def get_all_pokemons(
@@ -19,10 +22,50 @@ async def get_all_pokemons(
     offset: int = 0
 ):
     try:
+
+        cache_key = f"pokemons_{offset}_{limit}"
+
+        cached_pokemons = await redis_client.get(cache_key)
+
+        if cached_pokemons:
+            return json.loads(cached_pokemons)
+
         response = requests.get(f"{POKEAPI_URL}?limit={limit}&offset={offset}")
         response.raise_for_status()
         pokemons = response.json()
-        return pokemons
+
+        pokemon_details_list = []
+
+        for pokemon in pokemons["results"]:
+            pokemon_info_response = requests.get(pokemon["url"])
+            pokemon_info_response.raise_for_status()
+            pokemon_details = pokemon_info_response.json()
+
+            pokemon_image_url = pokemon_details["sprites"]["front_default"]
+
+            species_info_response = requests.get(f"{POKEAPI_SPECIES_URL}/{pokemon_details['id']}")
+            species_info_response.raise_for_status()
+            species_details = species_info_response.json()
+
+            color = species_details["color"]["name"]
+
+            pokemon_details_list.append({
+                "name": pokemon["name"],
+                "image": pokemon_image_url,
+                "color": color
+            })
+
+        result = {
+            "count": pokemons["count"],
+            "next": pokemons["next"],
+            "previous": pokemons["previous"],
+            "results": pokemon_details_list
+        }
+
+        await redis_client.setex(cache_key, 3600, json.dumps(result))
+
+        return result
+
     except requests.exceptions.RequestException as error:
         raise HTTPException(status_code=500, detail=str(error))
 
@@ -51,5 +94,7 @@ async def login_user(
         )
 
     access_token = create_access_token(data_payload={"sub": user.username})
+
+    await redis_client.setex(f"user_session_{user.username}", 3600, access_token)
 
     return {"access_token": access_token, "token_type": "Bearer"}
