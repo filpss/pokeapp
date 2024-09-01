@@ -6,16 +6,25 @@ from backend.pokeapp.repository.respository import register_user, autenticate_us
 from backend.pokeapp.schemas.schemas import UserPublic, UserSchema, Token
 from fastapi.security import OAuth2PasswordRequestForm
 from backend.pokeapp.security import get_current_user, create_access_token
+import requests
 
 router = APIRouter(prefix="/api")
 
+POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon"
 
 @router.get("/")
-async def message(
-    session: Session = Depends(get_db), current_user=Depends(get_current_user)
+async def get_all_pokemons(
+    current_user=Depends(get_current_user),
+    limit: int = 6,
+    offset: int = 0
 ):
-    return {"message": "Olá mundo!"}
-
+    try:
+        response = requests.get(f"{POKEAPI_URL}?limit={limit}&offset={offset}")
+        response.raise_for_status()
+        pokemons = response.json()
+        return pokemons
+    except requests.exceptions.RequestException as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 @router.post("/register", status_code=HTTPStatus.CREATED, response_model=UserPublic)
 async def create_user(
