@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     volumes:
-      - C:/Users/Public/docker_data_2/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build:
@@ -25,3 +25,7 @@ services:
       - .env
     depends_on:
       - postgresql
+
+volumes:
+  postgres_data:
+    
