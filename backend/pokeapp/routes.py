@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.pokeapp.database.connection import get_db
 from backend.pokeapp.repository.respository import register_user, autenticate_user
@@ -26,17 +26,20 @@ async def create_user(
     return new_user
 
 
-@router.post("/login", status_code=HTTPStatus.OK, response_model=UserPublic)
-async def login(user: UserSchema): ...
-
-
-@router.post("/token", response_model=Token)
-async def login_for_access_token(
+@router.post("/login", response_model=Token)
+async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_db)
 ):
     user = autenticate_user(
         session, username=form_data.username, password=form_data.password
     )
+
+    if not user:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Usuário ou senha incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     access_token = create_access_token(data_payload={"sub": user.username})
 

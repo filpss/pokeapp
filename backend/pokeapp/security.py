@@ -13,7 +13,7 @@ from fastapi import Depends, HTTPException
 from backend.pokeapp.models.models import User
 
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 
 def get_password_hash(password: str):
