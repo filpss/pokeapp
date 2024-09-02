@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api")
 
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon"
 POKEAPI_SPECIES_URL = "https://pokeapi.co/api/v2/pokemon-species"
-
+MAX_POKEMON_ID = 1025
 
 @router.get("/")
 async def get_all_pokemons(
@@ -28,7 +28,11 @@ async def get_all_pokemons(
         if cached_pokemons:
             return json.loads(cached_pokemons)
 
-        response = requests.get(f"{POKEAPI_URL}?limit={limit}&offset={offset}")
+        if offset >= MAX_POKEMON_ID:
+            raise HTTPException(status_code=400, detail="Offset is out of range")
+
+        adjusted_limit = min(limit, MAX_POKEMON_ID - offset)
+        response = requests.get(f"{POKEAPI_URL}?limit={adjusted_limit}&offset={offset}")
         response.raise_for_status()
         pokemons = response.json()
 
@@ -52,8 +56,8 @@ async def get_all_pokemons(
             )
 
         result = {
-            "count": pokemons["count"],
-            "next": pokemons["next"],
+            "count": MAX_POKEMON_ID,
+            "next": pokemons["next"] if offset + adjusted_limit < MAX_POKEMON_ID else None,
             "previous": pokemons["previous"],
             "results": pokemon_details_list,
         }
@@ -92,6 +96,6 @@ async def login_user(
 
     access_token = create_access_token(data_payload={"sub": user.username})
 
-    redis_client.setex(f"user_session_{user.username}", 20, access_token)
+    redis_client.setex(f"user_session_{user.username}", 1800, access_token)
 
     return {"access_token": access_token, "token_type": "Bearer"}

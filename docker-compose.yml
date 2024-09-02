@@ -26,6 +26,19 @@ services:
     depends_on:
       - postgresql
 
+  frontend:
+    build:
+      context: ./frontend/vue_pokeapp
+      dockerfile: Dockerfile
+    container_name: pokeapp_frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/vue_pokeapp:/app
+    working_dir: /app
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
     
