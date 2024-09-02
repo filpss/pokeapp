@@ -47,10 +47,8 @@ async def get_all_pokemons(
             species_info_response.raise_for_status()
             species_details = species_info_response.json()
 
-            color = species_details["color"]["name"]
-
             pokemon_details_list.append(
-                {"name": pokemon["name"], "image": pokemon_image_url, "color": color}
+                {"name": pokemon["name"], "image": pokemon_image_url}
             )
 
         result = {
