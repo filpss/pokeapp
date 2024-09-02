@@ -13,6 +13,11 @@
   const login = async () => {
     errorMessage.value = '';
 
+    if (!username.value || !password.value) {
+      errorMessage.value = 'Usuário e senha não podem ser vazios';
+      return;
+    }
+
     try {
       const response = await axios.post('/login', new URLSearchParams({
         username: username.value,
