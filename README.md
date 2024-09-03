@@ -68,12 +68,12 @@ Isso fará com que:
     - O backend se torne acessível em http://localhost:8000.
     - O frontend se torne acessível em http://localhost ou http://localhost:80.
 
-### 5. Acessando a Aplicação
+### 4. Acessando a Aplicação
 
 Abra o navegador e vá para http://localhost para acessar a interface do usuário.
 Caso dejse ver a documentacão da API (Swagger UI) basta acessar http://localhost:8000/docs.
 
-### 6. Parar a Aplicação
+### 5. Parar a Aplicação
 
 Ao finalizar, caso deseje parar a aplicação e remover os containers, execute:
 ```bash
